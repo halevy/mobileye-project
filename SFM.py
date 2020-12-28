@@ -1,6 +1,4 @@
-import sys
-from math import sqrt
-
+from operator import itemgetter
 import numpy as np
 
 
@@ -97,19 +95,13 @@ def find_corresponding_points(p, norm_pts_rot, foe):
     # compute the epipolar line between p and foe
     # run over all norm_pts_rot and find the one closest to the epipolar line
     # return the closest point and its index
-    min_ = (((foe[1] - p[1]) / (foe[0] - p[0])) * norm_pts_rot[0][0] + ((p[1] * foe[0] - foe[1] * p[0]) / (foe[0] - p[0]))
-         -norm_pts_rot[0][1])/(sqrt(pow(((foe[1] - p[1])/(foe[0] - p[0])), 2) + 1))
-    index = 0
+    x, y = 0, 1
+    m = (foe[y]-p[y])/(foe[x]-p[x])
+    n = (p[y]*foe[x] - foe[y]*p[x])/(foe[x]-p[x])
+    list = [[abs((m * pts[x] + n - pts[y]) / np.sqrt(pow(m, 2) + 1)), i] for i, pts in enumerate(norm_pts_rot)]
+    min_dist, i_min = min(list, key=itemgetter(0))
 
-    for i in range(1, len(norm_pts_rot)):
-        point = (((foe[1] - p[1]) / (foe[0] - p[0])) * norm_pts_rot[i][0] + ((p[1] * foe[0] - foe[1] * p[0]) / (foe[0] - p[0]))
-         -norm_pts_rot[i][1])/(sqrt(pow(((foe[1] - p[1])/(foe[0] - p[0])), 2) + 1))
-
-        if point < min_:
-            min_ = point
-            index = i
-
-    return index, norm_pts_rot[index]
+    return i_min, norm_pts_rot[i_min]
 
 
 def calc_dist(p_curr, p_rot, foe, tZ):
